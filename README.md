@@ -35,7 +35,6 @@ npm install
 3. Cài đặt và cấu hình MetaMask:
 - Cài đặt MetaMask extension cho trình duyệt
 - Tạo ví hoặc import ví hiện có
-- Kết nối với mạng test (Sepolia/Goerli)
 
 4. Khởi chạy ứng dụng:
 ```bash
