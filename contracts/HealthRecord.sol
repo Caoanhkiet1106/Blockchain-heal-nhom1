@@ -51,9 +51,12 @@ contract HealthRecord is Ownable {
     uint256 private appointmentCounter;
 
     address[] private registeredDoctors;
+    address[] private registeredPatients;
 
     event PatientRegistered(address patientAddress);
     event DoctorRegistered(address doctorAddress);
+    event DoctorRemoved(address doctorAddress); // New delete 
+    event DoctorInfoUpdated(address doctorAddress, string name, string department, string phone, string homeAddress); // new edit
     event AppointmentCreated(uint256 appointmentId);
     event AppointmentConfirmed(uint256 appointmentId);
     event AppointmentCompleted(uint256 appointmentId);
@@ -82,6 +85,7 @@ contract HealthRecord is Ownable {
             isRegistered: true
         });
 
+        registeredPatients.push(msg.sender);
         emit PatientRegistered(msg.sender);
     }
 
@@ -105,6 +109,54 @@ contract HealthRecord is Ownable {
         registeredDoctors.push(_doctorAddress);
         emit DoctorRegistered(_doctorAddress);
     }
+        // delete doctor
+    function removeDoctor(address _doctorAddress) public onlyOwner{
+        require(doctors[_doctorAddress].isRegistered, "Doctor is not registerd");
+
+        delete doctors[_doctorAddress];
+
+        for (uint256 i = 0; i < registeredDoctors.length; i++) {
+            if (registeredDoctors[i] == _doctorAddress) {
+                registeredDoctors[i] = registeredDoctors[registeredDoctors.length -1];
+                registeredDoctors.pop();
+                break;
+            }
+        }
+        emit DoctorRemoved(_doctorAddress);
+    }
+
+        // edit doctorinfo
+    function updateDoctorInfo(
+        address _doctorAddress,
+        string memory _name,
+        string memory _department,
+        string memory _phone,
+        string memory _homeAddress
+    ) public {
+        // Kiểm tra quyền hạn: chỉ admin hoặc chính bác sĩ được phép sửa
+        require(msg.sender == _doctorAddress || msg.sender == owner(), "Not authorized");
+
+        // Kiểm tra xem bác sĩ đã được đăng ký chưa
+        require(doctors[_doctorAddress].isRegistered, "Doctor is not registered");
+
+        // Cập nhật thông tin
+        if (bytes(_name).length > 0) {
+            doctors[_doctorAddress].name = _name;
+        }
+        if (bytes(_department).length > 0) {
+            doctors[_doctorAddress].department = _department;
+        }
+        if (bytes(_phone).length > 0) {
+            doctors[_doctorAddress].phone = _phone;
+        }
+        if (bytes(_homeAddress).length > 0) {
+            doctors[_doctorAddress].homeAddress = _homeAddress;
+        }
+
+        // Phát sự kiện
+        emit DoctorInfoUpdated(_doctorAddress, _name, _department, _phone, _homeAddress);
+    }
+
 
     function createAppointment(address _doctorAddress, uint256 _appointmentTime, string memory _description) public {
         require(patients[msg.sender].isRegistered, "Patient not registered");
@@ -271,6 +323,10 @@ contract HealthRecord is Ownable {
         return registeredDoctors;
     }
 
+    function getAllPatients() public view returns (address[] memory) {
+    return registeredPatients;
+    }   
+    
     function addMedicalRecordAndCompleteAppointment(
         address _patientAddress,
         string memory _diagnosis,

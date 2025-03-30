@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import RegisterDoctor from './pages/RegisterDoctor';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
+import PatientList from './pages/PatientList';
 import { ethers } from 'ethers';
 import HealthRecord from './artifacts/contracts/HealthRecord.sol/HealthRecord.json';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -94,6 +95,7 @@ function App() {
                         <Route path="/patient-dashboard" element={<PatientDashboard account={account} contract={contract} />} />
                         <Route path="/doctor-dashboard" element={<DoctorDashboard account={account} contract={contract} />} />
                         <Route path="/admin" element={<AdminDashboard contract={contract} />} />
+                        <Route path="/admin/patients" element={<PatientList contract={contract} />} />
                     </Routes>
                 </Container>
             </div>

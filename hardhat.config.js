@@ -12,7 +12,7 @@ module.exports = {
         localhost: { 
             url: "http://127.0.0.1:7545",
             chainId: 1337,
-            accounts: ["0x521ba8bc8ed4291ab9b1efb5ae20cc395ab4cc0df8177d85a8d4a3ccc68f5d47"]
+            accounts: ["0x4c246b4e8bd5b5b242f1c957e493e8bd848eeda6c4f4b6b622f49edb90b9125b"]
         }
     },
     paths: {

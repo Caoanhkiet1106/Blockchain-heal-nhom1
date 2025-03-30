@@ -18,13 +18,18 @@ const AppointmentList = forwardRef(({ contract, isDoctor }, ref) => {
                     const appointment = await contract.appointments(id);
                     const doctor = await contract.doctors(appointment.doctor);
                     const patient = await contract.patients(appointment.patient);
+
+                    // Kiểm tra xem bác sĩ có tồn tại hay không
+                    const doctorName = doctor.isRegistered ? doctor.name : "Bác sĩ hiện đang bận";
+                    const department = doctor.isRegistered ? doctor.department : "Không khả dụng";
+
                     return {
                         id: id.toString(),
                         patientName: patient.name || appointment.patient,
                         patientAddress: appointment.patient,
-                        doctorName: doctor.name,
+                        doctorName: doctorName,
                         doctorAddress: appointment.doctor,
-                        department: doctor.department,
+                        department: department,
                         time: Number(appointment.appointmentTime),
                         description: appointment.description,
                         isConfirmed: appointment.isConfirmed,
@@ -148,10 +153,14 @@ const AppointmentList = forwardRef(({ contract, isDoctor }, ref) => {
                                         <small className="text-muted">{appointment.patientAddress}</small>
                                     </>
                                 ) : (
-                                    <>
-                                        {appointment.doctorName}<br />
-                                        <small className="text-muted">{appointment.doctorAddress}</small>
-                                    </>
+                                    appointment.doctorName === "Bác sĩ hiện đang bận" ? (
+                                        <span className="text-danger">Bác sĩ hiện đang bận, mong a/c hủy lịch hẹn và đặt lại lịch khám </span>
+                                    ) : (
+                                        <>
+                                            {appointment.doctorName}<br />
+                                            <small className="text-muted">{appointment.doctorAddress}</small>
+                                        </>
+                                    )
                                 )}
                             </td>
                             <td>{appointment.department}</td>

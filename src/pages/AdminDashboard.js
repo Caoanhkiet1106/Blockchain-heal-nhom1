@@ -13,6 +13,8 @@ function AdminDashboard({ contract }) {
     const [message, setMessage] = useState('');
     const [isOwner, setIsOwner] = useState(false);
     const [doctors, setDoctors] = useState([]);
+    const [isEditing, setIsEditing] = useState(false); // Thêm trạng thái sửa
+    const [editingDoctor, setEditingDoctor] = useState(null); // Địa chỉ bác sĩ đang sửa
 
     useEffect(() => {
         const checkOwner = async () => {
@@ -100,6 +102,72 @@ function AdminDashboard({ contract }) {
             setMessage('Lỗi đăng ký bác sĩ: ' + err.message);
         }
     };
+    // Xóa bác sĩ
+    const handleRemoveDoctor = async (doctorAddress) => {
+        setMessage(''); // Xóa thông báo cũ
+    
+        try {
+            console.log("Đang xóa bác sĩ với địa chỉ:", doctorAddress);
+            const tx = await contract.removeDoctor(doctorAddress); // Gọi hàm removeDoctor
+            console.log("Đang chờ giao dịch hoàn thành...");
+            await tx.wait();
+            console.log("Xóa bác sĩ thành công, đang tải lại danh sách...");
+    
+            setMessage('Xóa bác sĩ thành công!');
+            await loadDoctors(); // Tải lại danh sách bác sĩ sau khi xóa
+        } catch (err) {
+            console.error("Lỗi khi xóa bác sĩ:", err);
+            setMessage('Lỗi khi xóa bác sĩ: ' + err.message);
+        }
+    };
+
+    // Sửa thông tin bác sĩ
+    const handleEditDoctor = (doctor) => {
+        setFormData({
+            doctorAddress: doctor.address,
+            name: doctor.name,
+            department: doctor.department,
+            phone: doctor.phone,
+            homeAddress: doctor.homeAddress
+        });
+        setEditingDoctor(doctor.address);
+        setIsEditing(true); // Chuyển sang chế độ sửa
+    };
+
+
+    // Cập nhật thông tin bác sĩ
+    const handleUpdateDoctor = async (e) => {
+        e.preventDefault();
+        setMessage('');
+    
+        try {
+            console.log("Đang cập nhật thông tin bác sĩ:", formData);
+            const tx = await contract.updateDoctorInfo(
+                editingDoctor,
+                formData.name,
+                formData.department,
+                formData.phone,
+                formData.homeAddress
+            );
+            console.log("Đang chờ giao dịch hoàn thành...");
+            await tx.wait();
+            console.log("Cập nhật thành công, đang tải lại danh sách...");
+    
+            setMessage('Cập nhật thông tin bác sĩ thành công!');
+            setIsEditing(false); // Thoát chế độ sửa
+            setFormData({
+                doctorAddress: '',
+                name: '',
+                department: '',
+                phone: '',
+                homeAddress: ''
+            });
+            await loadDoctors(); // Tải lại danh sách bác sĩ
+        } catch (err) {
+            console.error("Lỗi khi cập nhật thông tin bác sĩ:", err);
+            setMessage('Lỗi cập nhật thông tin bác sĩ: ' + err.message);
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -124,7 +192,7 @@ function AdminDashboard({ contract }) {
             {message && <Alert className="mt-3" variant={message.includes('Lỗi') ? 'danger' : 'success'}>
                 {message}
             </Alert>}
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={isEditing ? handleUpdateDoctor : handleSubmit}>
                 <Form.Group className="mb-3">
                     <Form.Label>Địa chỉ ví của Bác sĩ</Form.Label>
                     <Form.Control
@@ -133,6 +201,7 @@ function AdminDashboard({ contract }) {
                         value={formData.doctorAddress}
                         onChange={handleChange}
                         placeholder="0x..."
+                        readOnly={isEditing} // Không cho phép sửa địa chỉ khi đang chỉnh sửa
                         required
                     />
                 </Form.Group>
@@ -190,7 +259,7 @@ function AdminDashboard({ contract }) {
                     />
                 </Form.Group>
 
-                <Button type="submit">Đăng ký Bác sĩ</Button>
+                <Button type="submit">{isEditing ? 'Cập nhật' : 'Đăng ký'}</Button>
             </Form>
 
             <h3 className="mt-4">Danh sách Bác sĩ đã đăng ký</h3>
@@ -203,6 +272,7 @@ function AdminDashboard({ contract }) {
                             <th>Khoa</th>
                             <th>Số điện thoại</th>
                             <th>Địa chỉ</th>
+                            <th>Hành động </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -213,6 +283,23 @@ function AdminDashboard({ contract }) {
                                 <td>{doctor.department}</td>
                                 <td>{doctor.phone}</td>
                                 <td>{doctor.homeAddress}</td>
+                                <td>
+                                    <Button
+                                        variant="outline-secondary"
+                                        size="sm"
+                                        className="me-2"
+                                        onClick={() => handleEditDoctor(doctor)}
+                                    >
+                                        Sửa
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() => handleRemoveDoctor(doctor.address)}
+                                    >
+                                        xóa
+                                    </Button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

@@ -16,6 +16,7 @@ function Navigation({ account, isDoctor, isPatient }) {
                         {isPatient && <Nav.Link as={Link} to="/patient">Patient Dashboard</Nav.Link>}
                         {isDoctor && <Nav.Link as={Link} to="/doctor">Doctor Dashboard</Nav.Link>}
                         <Nav.Link as={Link} to="/admin">Admin</Nav.Link>
+                        <Nav.Link as={Link} to="/admin/patients">Danh sách bệnh nhân</Nav.Link>
                     </Nav>
                     <Nav>
                         {account ? (
